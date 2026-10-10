@@ -4,9 +4,9 @@ Refactor project Minggu 5 (`week5_offline_notes`, offline-first notes + cache-fi
 API posts) menjadi struktur **feature-first Clean Architecture**. Project ini
 melanjutkan repository yang sama, bukan project baru.
 
-> **Status:** Praktikum 1 (Audit layer) ✅ dan Praktikum 2 (Domain & data fitur
-> notes) ✅. Presentation belum di-rewire dan file lama belum dihapus — rewiring
-> DI + penghapusan dikerjakan pada Praktikum 3.
+> **Status:** Praktikum 1 (Audit) ✅, Praktikum 2 (Domain & data notes) ✅,
+> Praktikum 3 (Presentation + DI + verifikasi, fitur notes) ✅. Fitur posts &
+> settings masih struktur lama (scope Refactoring Challenge).
 
 ## Tujuan
 
@@ -173,7 +173,56 @@ saat rewiring provider di Praktikum 3. `NoteRepositoryImpl` memakai
 *initializing formal* posisional (`NoteRepositoryImpl(this._openDb)`) agar
 `flutter analyze` bersih.
 
-### Verifikasi (target setelah Praktikum 3)
+## Praktikum 3 — Presentation, DI, dan verifikasi (notes)
+
+Fitur `notes` disambungkan end-to-end; file lama untuk notes dihapus.
+
+**File baru / pindah**
+
+| File | Isi |
+| :--- | :--- |
+| `lib/features/notes/domain/usecases/sync_notes.dart` | Use case `SyncNotes`: `countDirty` → (simulasi upload) → `markAllSynced`. |
+| `lib/features/notes/presentation/providers/notes_providers.dart` | DI Riverpod: `noteRepositoryProvider`, `getNotesProvider`, `syncNotesProvider`, `notesProvider` (AsyncNotifier), `dirtyCountProvider`, `noteDetailProvider`. |
+| `lib/features/notes/presentation/pages/notes_page.dart` | Daftar catatan (diekstrak dari `home_page.dart`). |
+| `lib/features/notes/presentation/pages/note_detail_page.dart` | Pindah dari `lib/pages/`. |
+| `lib/features/notes/presentation/widgets/note_tile.dart` | Pindah dari `lib/widgets/` (impor entity domain). |
+
+**Diubah / dihapus**
+
+- `domain/repositories/note_repository.dart` diperluas: `fetchNoteById`,
+  `deleteNote`, `countDirty`, `markAllSynced` (semua memakai record + `Failure?`).
+- `data/repositories/note_repository_impl.dart` mengimplementasikan seluruh
+  kontrak; exception dibungkus `LocalFailure`.
+- `lib/pages/home_page.dart` memakai `NotesPage` + provider dari fitur notes.
+- `lib/providers/app_providers.dart` hanya menyisakan posts + `forceOffline`.
+- `lib/data/sync.dart` hanya menyisakan logika posts.
+- Dihapus: `lib/data/local/note.dart`, `lib/data/repositories/note_repository.dart`,
+  `lib/pages/note_detail_page.dart`, `lib/widgets/note_tile.dart`.
+
+**Deviasi dari codelab (disengaja & terdokumentasi)**
+
+- `notesProvider` memakai `AsyncNotifier` (bukan `FutureProvider`) karena UI
+  butuh mutasi `add`/`delete`/`sync`, bukan sekadar baca.
+- `NoteRepositoryImpl(openNotesDb)` memakai parameter posisional (bukan named
+  `openDb:`) mengikuti Praktikum 2 agar `prefer_initializing_formals` bersih.
+- CRUD satu-baris (add/delete/fetchById) tidak dibuatkan use case — langsung
+  repository → notifier (sesuai catatan codelab bahwa itu over-engineering).
+
+### Hasil verifikasi
+
+| Pemeriksaan | Perintah | Hasil |
+| :--- | :--- | :--- |
+| Presentation steril | `rg "Dio\(|openDatabase|getDatabasesPath|FlutterSecureStorage|SharedPreferences\.getInstance|jsonDecode" lib/features/notes/presentation lib/pages` | **0 hasil** ✅ |
+| Domain steril | `rg "import 'package:flutter|import 'package:dio|import 'package:sqflite|import 'package:firebase" lib/features/notes/domain lib/core` | **0 hasil** ✅ |
+| Static analysis | `flutter analyze` | **No issues found** ✅ |
+| Test | `flutter test` | **7 test lulus** ✅ |
+
+Catatan: grep audit Praktikum 1 (`Repository\(` di `lib/pages`/`lib/providers`)
+masih menyisakan `settings_page.dart` (`PrefsRepository()`) dan
+`app_providers.dart` (`PostRepository()`) — keduanya fitur **posts/settings**
+yang belum direfactor (scope Refactoring Challenge, bukan Praktikum 3 notes).
+
+### Perintah verifikasi (rujukan)
 
 ```
 # 1. Presentation steril dari data mentah (harus NOL)

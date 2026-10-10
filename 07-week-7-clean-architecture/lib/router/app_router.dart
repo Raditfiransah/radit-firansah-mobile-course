@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
+import '../features/notes/presentation/pages/note_detail_page.dart';
 import '../pages/home_page.dart';
-import '../pages/note_detail_page.dart';
 import '../pages/settings_page.dart';
 
 final appRouter = GoRouter(

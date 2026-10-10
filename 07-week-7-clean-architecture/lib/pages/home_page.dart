@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../features/notes/presentation/pages/notes_page.dart';
+import '../features/notes/presentation/providers/notes_providers.dart';
 import '../providers/app_providers.dart';
-import '../widgets/note_tile.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -67,7 +68,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      body: _tabIndex == 0 ? const _NotesView() : const _PostsView(),
+      body: _tabIndex == 0 ? const NotesPage() : const _PostsView(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
         onDestinationSelected: (i) => setState(() => _tabIndex = i),
@@ -171,51 +172,6 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------------------
-// View 1: Catatan Lokal menggunakan NoteTile & Navigasi Detail GoRouter
-// -----------------------------------------------------------------------------
-class _NotesView extends ConsumerWidget {
-  const _NotesView();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notesAsync = ref.watch(notesProvider);
-
-    return notesAsync.when(
-      data: (notes) {
-        if (notes.isEmpty) {
-          return const Center(
-            child: Text('Belum ada catatan. Tekan tombol + untuk menambah.'),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.only(top: 8, bottom: 80),
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            final note = notes[index];
-            return NoteTile(
-              note: note,
-              onTap: () {
-                if (note.id != null) {
-                  context.push('/note/${note.id}');
-                }
-              },
-              onDelete: () {
-                if (note.id != null) {
-                  ref.read(notesProvider.notifier).deleteNote(note.id!);
-                }
-              },
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
 }

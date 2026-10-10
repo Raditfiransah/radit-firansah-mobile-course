@@ -22,12 +22,30 @@ class FakeNoteRepository implements NoteRepository {
   }
 
   @override
+  Future<({Note? note, Failure? failure})> fetchNoteById(int id) async {
+    for (final note in items) {
+      if (note.id == id) return (note: note, failure: null);
+    }
+    return (note: null, failure: null);
+  }
+
+  @override
   Future<({Note? note, Failure? failure})> addNote({
     required String title,
     String body = '',
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<Failure?> deleteNote(int id) async => null;
+
+  @override
+  Future<({int count, Failure? failure})> countDirty() async =>
+      (count: items.where((n) => n.dirty).length, failure: null);
+
+  @override
+  Future<Failure?> markAllSynced() async => null;
 }
 
 void main() {
