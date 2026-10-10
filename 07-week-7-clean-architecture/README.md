@@ -4,8 +4,9 @@ Refactor project Minggu 5 (`week5_offline_notes`, offline-first notes + cache-fi
 API posts) menjadi struktur **feature-first Clean Architecture**. Project ini
 melanjutkan repository yang sama, bukan project baru.
 
-> **Status:** Praktikum 1 (Audit layer) — dokumen ini adalah hasil audit. Kode
-> fitur belum dipindah/dipecah; pemindahan dikerjakan pada Praktikum 2 & 3.
+> **Status:** Praktikum 1 (Audit layer) ✅ dan Praktikum 2 (Domain & data fitur
+> notes) ✅. Presentation belum di-rewire dan file lama belum dihapus — rewiring
+> DI + penghapusan dikerjakan pada Praktikum 3.
 
 ## Tujuan
 
@@ -150,6 +151,27 @@ data (model, repository impl, Dio, SQLite, secure storage)
 Aturan emas: dependensi hanya mengarah ke dalam. `domain` tidak tahu apa pun
 tentang Flutter, Dio, atau SQLite — sehingga logika bisnis dapat diunit-test murni.
 Fitur berkomunikasi via rute, bukan saling mengimpor widget.
+
+## Praktikum 2 — Domain dan data per fitur (notes)
+
+File baru (fitur `notes`), mengikuti codelab. File lama **tidak dihapus** agar
+aplikasi tetap berjalan; rewiring dikerjakan di Praktikum 3.
+
+| File | Layer | Isi |
+| :--- | :--- | :--- |
+| `lib/core/failures.dart` | core | `sealed Failure` + `LocalFailure` + `NetworkFailure` (murni Dart). |
+| `lib/features/notes/domain/entities/note.dart` | domain | Entity `Note` murni, tanpa import Flutter & tanpa mapping. |
+| `lib/features/notes/domain/repositories/note_repository.dart` | domain | Interface kontrak (`fetchNotes`, `addNote`) memakai record `({..., Failure? failure})`. |
+| `lib/features/notes/domain/usecases/get_notes.dart` | domain | Use case `GetNotes` (menerima abstraksi `NoteRepository`). |
+| `lib/features/notes/data/models/note_model.dart` | data | `NoteModel extends Note`; mapping `toMap`/`fromMap`/`toEntity` **hanya di sini**. |
+| `lib/features/notes/data/repositories/note_repository_impl.dart` | data | `NoteRepositoryImpl implements NoteRepository`; exception dibungkus jadi `LocalFailure`. |
+| `test/get_notes_test.dart` | test | 2 test use case dengan `FakeNoteRepository` (sukses + failure), tanpa SQLite/Dio. |
+
+Catatan: kontrak interface sengaja **minimal** (persis codelab). Method lama
+(`fetchNoteById`, `deleteNote`, `countDirty`, `markAllSynced`) akan ditambahkan
+saat rewiring provider di Praktikum 3. `NoteRepositoryImpl` memakai
+*initializing formal* posisional (`NoteRepositoryImpl(this._openDb)`) agar
+`flutter analyze` bersih.
 
 ### Verifikasi (target setelah Praktikum 3)
 
