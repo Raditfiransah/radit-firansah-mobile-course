@@ -236,6 +236,12 @@ flutter analyze
 flutter test
 ```
 
+## AI Challenge
+
+Prompt, output awal AI, tabel usulan-vs-keputusan-final, AI Verification
+Checklist, dan hasil tiga grep verifikasi ada di
+[`docs/AI_CHALLENGE.md`](docs/AI_CHALLENGE.md).
+
 ## Struktur folder
 
 ```
