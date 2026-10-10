@@ -1,26 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/local/prefs.dart';
-import '../providers/app_providers.dart';
-
-final prefsRepositoryProvider = Provider((ref) => PrefsRepository());
-final darkModeProvider = AsyncNotifierProvider<DarkModeNotifier, bool>(
-  DarkModeNotifier.new,
-);
-
-class DarkModeNotifier extends AsyncNotifier<bool> {
-  @override
-  Future<bool> build() => ref.watch(prefsRepositoryProvider).getDarkMode();
-
-  Future<void> toggle() async {
-    final next = !(state.value ?? false);
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      await ref.read(prefsRepositoryProvider).setDarkMode(next);
-      return next;
-    });
-  }
-}
+import '../../../../shared/providers.dart';
+import '../providers/settings_providers.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -29,7 +10,7 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(darkModeProvider).value ?? false;
     final isOffline = ref.watch(forceOfflineProvider);
-    final prefsRepo = ref.read(prefsRepositoryProvider);
+    final lastOpened = ref.watch(lastOpenedProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,15 +43,22 @@ class SettingsPage extends ConsumerWidget {
             },
           ),
           const Divider(),
-          FutureBuilder<String?>(
-            future: prefsRepo.getLastOpened(),
-            builder: (context, snapshot) {
-              return ListTile(
-                leading: const Icon(Icons.access_time),
-                title: const Text('Terakhir Dibuka'),
-                subtitle: Text(snapshot.data ?? 'Belum tercatat'),
-              );
-            },
+          lastOpened.when(
+            data: (value) => ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Terakhir Dibuka'),
+              subtitle: Text(value ?? 'Belum tercatat'),
+            ),
+            loading: () => const ListTile(
+              leading: Icon(Icons.access_time),
+              title: Text('Terakhir Dibuka'),
+              subtitle: Text('Memuat...'),
+            ),
+            error: (e, _) => ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Terakhir Dibuka'),
+              subtitle: Text('$e'),
+            ),
           ),
         ],
       ),

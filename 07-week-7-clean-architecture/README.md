@@ -5,8 +5,9 @@ API posts) menjadi struktur **feature-first Clean Architecture**. Project ini
 melanjutkan repository yang sama, bukan project baru.
 
 > **Status:** Praktikum 1 (Audit) ✅, Praktikum 2 (Domain & data notes) ✅,
-> Praktikum 3 (Presentation + DI + verifikasi, fitur notes) ✅. Fitur posts &
-> settings masih struktur lama (scope Refactoring Challenge).
+> Praktikum 3 (Presentation + DI, notes) ✅, dan Refactoring Challenge
+> (posts + settings + `core/format.dart`) ✅. Ketiga grep sterilitas **nol hasil**.
+> Screenshot before/after belum diambil (pending).
 
 ## Tujuan
 
@@ -220,7 +221,8 @@ Fitur `notes` disambungkan end-to-end; file lama untuk notes dihapus.
 Catatan: grep audit Praktikum 1 (`Repository\(` di `lib/pages`/`lib/providers`)
 masih menyisakan `settings_page.dart` (`PrefsRepository()`) dan
 `app_providers.dart` (`PostRepository()`) — keduanya fitur **posts/settings**
-yang belum direfactor (scope Refactoring Challenge, bukan Praktikum 3 notes).
+yang belum direfactor saat Praktikum 3. **Sudah dibereskan pada Refactoring
+Challenge di bawah** (kini nol hasil).
 
 ### Perintah verifikasi (rujukan)
 
@@ -235,6 +237,78 @@ rg "import 'package:flutter|import 'package:dio|import 'package:sqflite|import '
 flutter analyze
 flutter test
 ```
+
+## Refactoring Challenge
+
+Menerapkan pola Clean Architecture yang sama ke fitur kedua (**posts**) dan
+**settings**, mengekstrak utilitas murni, dan memindahkan exception mentah
+menjadi `Failure`.
+
+### 1. Fitur kedua — `posts`
+
+| File | Layer | Isi |
+| :--- | :--- | :--- |
+| `lib/features/posts/domain/entities/post.dart` | domain | Entity `Post` murni. |
+| `lib/features/posts/domain/repositories/post_repository.dart` | domain | Interface (`readCachedPosts`, `savePostsToCache`, `fetchFromApi`) + `Failure?`. |
+| `lib/features/posts/domain/usecases/load_posts_cache_first.dart` | domain | Use case cache-first (baca cache, refresh API di background via `void Function()` agar steril dari Flutter). |
+| `lib/features/posts/data/models/post_model.dart` | data | `PostModel extends Post`; mapping JSON hanya di sini. |
+| `lib/features/posts/data/repositories/post_repository_impl.dart` | data | Impl Dio + SQLite; exception → `NetworkFailure`/`LocalFailure`. |
+| `lib/features/posts/presentation/providers/posts_providers.dart` | presentation | DI + `AsyncNotifier` (build/refresh). |
+| `lib/features/posts/presentation/pages/posts_page.dart` | presentation | UI daftar posts (diekstrak dari `home_page.dart`). |
+
+Dihapus: `lib/data/local/post.dart`, `lib/data/repositories/post_repository.dart`,
+`lib/data/sync.dart`.
+
+### 2. Fitur `settings`
+
+| File | Layer | Isi |
+| :--- | :--- | :--- |
+| `lib/features/settings/domain/repositories/prefs_repository.dart` | domain | Interface `PrefsRepository` + `Failure?`. |
+| `lib/features/settings/data/repositories/prefs_repository_impl.dart` | data | Impl `shared_preferences`; exception → `LocalFailure`. |
+| `lib/features/settings/presentation/providers/settings_providers.dart` | presentation | `prefsRepositoryProvider`, `darkModeProvider`, `lastOpenedProvider`. |
+| `lib/features/settings/presentation/pages/settings_page.dart` | presentation | UI pengaturan (provider DI dikeluarkan dari halaman). |
+
+Dihapus: `lib/data/local/prefs.dart`, `lib/pages/settings_page.dart`.
+`main.dart` menjadi composition root (impor `PrefsRepositoryImpl` + provider baru).
+
+### 3. Ekstraksi utilitas murni — `lib/core/format.dart`
+
+- `formatShortDateTime(DateTime)` — dipakai `note_tile.dart`.
+- `formatFullDateTime(DateTime)` — dipakai `note_detail_page.dart`.
+- `parseRouteId(String?, {fallback})` — dipakai `app_router.dart`.
+
+### 4. Provider lintas fitur
+
+`forceOfflineProvider` dipindah dari `lib/providers/app_providers.dart` ke
+`lib/shared/providers.dart`. **Deviasi sadar** dari usulan AI
+(`lib/core/providers.dart`): pola grep-2 `import 'package:flutter` juga cocok
+dengan `import 'package:flutter_riverpod`, sehingga menaruh provider di
+`lib/core` akan menggagalkan verifikasi sterilitas `lib/core`.
+
+### 5. Error umum dan solusinya
+
+| Gejala | Penyebab umum | Solusi (diterapkan) |
+| :--- | :--- | :--- |
+| Import cycle / file saling mengimpor | Presentation diimpor domain/data, atau antar-presentation | Hanya `presentation → domain ← data`; fitur berkomunikasi via rute GoRouter, bukan impor widget. |
+| `The argument type 'PostModel' can't be assigned to 'Post'` | Repository impl mengembalikan model | Konversi `.toEntity()` di batas data → domain. |
+| `ref.watch` di luar widget/provider | Wiring DI di fungsi biasa | Wiring hanya di dalam `Provider`/`Notifier`/`ConsumerWidget`. |
+| Test butuh database/jaringan sungguhan | Use case diuji dengan impl asli | Uji domain dengan fake yang mengimplementasikan interface (`FakeNoteRepository`, `FakePostRepository`). |
+| `Dio(` bocor ke presentation (gagal grep-1) | Instansiasi `Dio()` di provider presentation | Buat `Dio` di dalam data layer (`PostRepositoryImpl(openNotesDb)`; `Dio` dibuat internal). |
+| `import 'package:flutter_riverpod` di `lib/core` (gagal grep-2) | Provider lintas fitur ditaruh di `core` | Pindah ke `lib/shared/providers.dart`. |
+| Refactor merusak fitur yang sudah jalan | Tak ada snapshot commit & uji manual | Commit snapshot sebelum refactor + `flutter analyze`/`flutter test` tiap tahap. |
+
+### Hasil verifikasi Refactoring Challenge
+
+| Pemeriksaan | Perintah | Hasil |
+| :--- | :--- | :--- |
+| Presentation steril | `rg "Dio\(|openDatabase|getDatabasesPath|FlutterSecureStorage|SharedPreferences\.getInstance|jsonDecode" lib/features/*/presentation lib/pages` | **0 hasil** ✅ |
+| Domain + core steril | `rg "import 'package:flutter|import 'package:dio|import 'package:sqflite|import 'package:firebase" lib/features/*/domain lib/core` | **0 hasil** ✅ |
+| DI bocor (`Repository\(` di `lib/pages`/`lib/providers`) | `rg "Repository\(|Dio\(BaseOptions" lib/pages lib/providers` | **0 hasil** ✅ (`lib/providers` dihapus) |
+| Static analysis | `flutter analyze` | **No issues found** ✅ |
+| Test | `flutter test` | **12 test lulus** ✅ |
+
+**Screenshot before/after belum diambil** (lingkungan headless); dicatat sebagai
+pending untuk bukti manual.
 
 ## AI Challenge
 

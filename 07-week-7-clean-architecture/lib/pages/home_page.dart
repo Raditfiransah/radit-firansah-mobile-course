@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/notes/presentation/pages/notes_page.dart';
 import '../features/notes/presentation/providers/notes_providers.dart';
-import '../providers/app_providers.dart';
+import '../features/posts/presentation/pages/posts_page.dart';
+import '../shared/providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -68,7 +69,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      body: _tabIndex == 0 ? const NotesPage() : const _PostsView(),
+      body: _tabIndex == 0 ? const NotesPage() : const PostsPage(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
         onDestinationSelected: (i) => setState(() => _tabIndex = i),
@@ -176,52 +177,3 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-// -----------------------------------------------------------------------------
-// View 2: Cache-First Read API Posts (GET /posts JSONPlaceholder)
-// -----------------------------------------------------------------------------
-class _PostsView extends ConsumerWidget {
-  const _PostsView();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final postsAsync = ref.watch(postsProvider);
-
-    return RefreshIndicator(
-      onRefresh: () => ref.read(postsProvider.notifier).refresh(),
-      child: postsAsync.when(
-        data: (posts) {
-          if (posts.isEmpty) {
-            return const Center(
-              child: Text(
-                'Data cache kosong.\nPastikan mode online aktif lalu tarik ke bawah untuk refresh.',
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return ListTile(
-                leading: CircleAvatar(child: Text('${post.id}')),
-                title: Text(
-                  post.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  post.body,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-      ),
-    );
-  }
-}

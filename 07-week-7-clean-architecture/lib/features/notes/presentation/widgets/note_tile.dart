@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/format.dart';
 import '../../domain/entities/note.dart';
 
 class NoteTile extends StatelessWidget {
@@ -45,7 +46,7 @@ class NoteTile extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  '${note.updatedAt.hour.toString().padLeft(2, '0')}:${note.updatedAt.minute.toString().padLeft(2, '0')} · ${note.updatedAt.day}/${note.updatedAt.month}/${note.updatedAt.year}',
+                  formatShortDateTime(note.updatedAt),
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
                 const SizedBox(width: 8),

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'data/local/prefs.dart';
-import 'pages/settings_page.dart';
+import 'features/settings/data/repositories/prefs_repository_impl.dart';
+import 'features/settings/presentation/providers/settings_providers.dart';
 import 'router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Catat waktu terakhir aplikasi dibuka
-  final prefs = PrefsRepository();
-  await prefs.markOpenedNow();
+  // Composition root: catat waktu terakhir aplikasi dibuka.
+  await PrefsRepositoryImpl().markOpenedNow();
 
   runApp(
     const ProviderScope(

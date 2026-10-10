@@ -160,6 +160,10 @@ final notesProvider = FutureProvider<List<Note>>((ref) async {
 
 ## 3. Tabel usulan-vs-keputusan-final
 
+> Catatan: keputusan di bawah diambil saat **Praktikum 3** (fokus notes). Beberapa
+> item "Ditunda" (baris 7, 8, 10) **sudah dikerjakan** pada tahap Refactoring
+> Challenge berikutnya — lihat bagian Refactoring Challenge di README.
+
 | # | Usulan AI | Keputusan final | Alasan teknis |
 | :-- | :--- | :--- | :--- |
 | 1 | Entity `Note` di `domain`, mapping di `data` | **Diterima** | `Note` murni tanpa import Flutter; `toMap/fromMap/toEntity` hanya di `NoteModel`. |

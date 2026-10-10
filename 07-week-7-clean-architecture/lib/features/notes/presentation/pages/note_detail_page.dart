@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/format.dart';
 import '../providers/notes_providers.dart';
 
 class NoteDetailPage extends ConsumerWidget {
@@ -86,7 +87,7 @@ class NoteDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'ID: #${note.id} · Terakhir diperbarui: ${note.updatedAt.toLocal()}',
+                  'ID: #${note.id} · Terakhir diperbarui: ${formatFullDateTime(note.updatedAt)}',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 const Divider(height: 24),
