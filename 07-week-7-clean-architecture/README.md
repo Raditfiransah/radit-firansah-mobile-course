@@ -307,6 +307,10 @@ dengan `import 'package:flutter_riverpod`, sehingga menaruh provider di
 | Static analysis | `flutter analyze` | **No issues found** ✅ |
 | Test | `flutter test` | **12 test lulus** ✅ |
 
+> Catatan Minggu 8: PR #4 menambah `AddNote` (validasi judul) + 3 test, sehingga
+> jumlah test menjadi **15**. Lihat
+> [`../08-week-8-mid-project-review/README.md`](../08-week-8-mid-project-review/README.md).
+
 **Screenshot before/after belum diambil** (lingkungan headless); dicatat sebagai
 pending untuk bukti manual.
 
