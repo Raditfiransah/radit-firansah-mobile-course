@@ -128,6 +128,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final titleCtrl = TextEditingController();
     final bodyCtrl = TextEditingController();
     String? error;
+    var saving = false;
 
     showDialog(
       context: context,
@@ -144,6 +145,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                   border: const OutlineInputBorder(),
                   errorText: error,
                 ),
+                onChanged: (_) {
+                  if (error != null) setDialogState(() => error = null);
+                },
                 autofocus: true,
               ),
               const SizedBox(height: 8),
@@ -163,17 +167,29 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: const Text('Batal'),
             ),
             FilledButton(
-              onPressed: () async {
-                final failure = await ref
-                    .read(notesProvider.notifier)
-                    .addNote(title: titleCtrl.text, body: bodyCtrl.text.trim());
-                if (!ctx.mounted) return;
-                if (failure != null) {
-                  setDialogState(() => error = failure.message);
-                  return;
-                }
-                Navigator.pop(ctx);
-              },
+              onPressed: saving
+                  ? null
+                  : () async {
+                      setDialogState(() {
+                        error = null;
+                        saving = true;
+                      });
+                      final failure = await ref
+                          .read(notesProvider.notifier)
+                          .addNote(
+                            title: titleCtrl.text,
+                            body: bodyCtrl.text.trim(),
+                          );
+                      if (!ctx.mounted) return;
+                      if (failure != null) {
+                        setDialogState(() {
+                          error = failure.message;
+                          saving = false;
+                        });
+                        return;
+                      }
+                      Navigator.pop(ctx);
+                    },
               child: const Text('Simpan'),
             ),
           ],
