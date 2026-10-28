@@ -76,4 +76,17 @@ void main() {
     expect(find.text('Belanja mingguan'), findsOneWidget);
     expect(find.text('Rapat proyek'), findsNothing);
   });
+
+  testWidgets('kolom pencarian tetap ada saat daftar masih kosong', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(_FakeNoteRepository(const [])));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsOneWidget);
+    expect(
+      find.text('Belum ada catatan. Tekan tombol + untuk menambah.'),
+      findsOneWidget,
+    );
+  });
 }
