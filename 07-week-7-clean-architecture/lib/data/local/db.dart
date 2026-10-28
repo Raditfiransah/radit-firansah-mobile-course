@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -7,7 +8,8 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 Future<Database> openNotesDb() async {
   if (kIsWeb) {
     databaseFactory = databaseFactoryFfiWeb;
-  } else if (!kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+  } else if (!kIsWeb &&
+      (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

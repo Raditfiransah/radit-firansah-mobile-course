@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Provider lintas fitur. Diletakkan di luar `lib/core` dan `features/*/domain`
 // agar grep sterilitas (lib/core) tetap nol hasil.
-final forceOfflineProvider =
-    NotifierProvider<ForceOfflineNotifier, bool>(ForceOfflineNotifier.new);
+final forceOfflineProvider = NotifierProvider<ForceOfflineNotifier, bool>(
+  ForceOfflineNotifier.new,
+);
 
 class ForceOfflineNotifier extends Notifier<bool> {
   @override

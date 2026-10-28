@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/format.dart';
 import '../../domain/entities/note.dart';
 
 class NoteTile extends StatelessWidget {
-  const NoteTile({
-    super.key,
-    required this.note,
-    this.onTap,
-    this.onDelete,
-  });
+  const NoteTile({super.key, required this.note, this.onTap, this.onDelete});
 
   final Note note;
   final VoidCallback? onTap;
@@ -36,11 +32,7 @@ class NoteTile extends StatelessWidget {
           children: [
             if (note.body.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(
-                note.body,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(note.body, maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
             const SizedBox(height: 8),
             Row(
@@ -52,7 +44,10 @@ class NoteTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 if (note.dirty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade100,
                       borderRadius: BorderRadius.circular(4),
@@ -68,7 +63,10 @@ class NoteTile extends StatelessWidget {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(4),

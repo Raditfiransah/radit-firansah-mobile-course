@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/failures.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/repositories/post_repository.dart';
@@ -37,22 +39,18 @@ class PostRepositoryImpl implements PostRepository {
       final db = await _openDb();
       final batch = db.batch();
       for (final post in posts) {
-        batch.insert(
-          'cached_posts',
-          {
-            'id': post.id,
-            'payload': jsonEncode(
-              PostModel(
-                id: post.id,
-                userId: post.userId,
-                title: post.title,
-                body: post.body,
-              ).toJson(),
-            ),
-            'cached_at': DateTime.now().toIso8601String(),
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        batch.insert('cached_posts', {
+          'id': post.id,
+          'payload': jsonEncode(
+            PostModel(
+              id: post.id,
+              userId: post.userId,
+              title: post.title,
+              body: post.body,
+            ).toJson(),
+          ),
+          'cached_at': DateTime.now().toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
       await batch.commit(noResult: true);
       return null;
@@ -70,8 +68,10 @@ class PostRepositoryImpl implements PostRepository {
       if (response.statusCode == 200) {
         final data = response.data as List;
         final posts = data
-            .map((item) =>
-                PostModel.fromJson(item as Map<String, dynamic>).toEntity())
+            .map(
+              (item) =>
+                  PostModel.fromJson(item as Map<String, dynamic>).toEntity(),
+            )
             .toList();
         return (posts: posts, failure: null);
       }

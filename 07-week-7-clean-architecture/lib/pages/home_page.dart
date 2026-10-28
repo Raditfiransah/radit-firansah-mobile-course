@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../features/notes/presentation/pages/notes_page.dart';
 import '../features/notes/presentation/providers/notes_providers.dart';
 import '../features/posts/presentation/pages/posts_page.dart';
@@ -162,10 +163,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             onPressed: () {
               final title = titleCtrl.text.trim();
               if (title.isNotEmpty) {
-                ref.read(notesProvider.notifier).addNote(
-                      title: title,
-                      body: bodyCtrl.text.trim(),
-                    );
+                ref
+                    .read(notesProvider.notifier)
+                    .addNote(title: title, body: bodyCtrl.text.trim());
                 Navigator.pop(ctx);
               }
             },
@@ -176,4 +176,3 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 }
-
