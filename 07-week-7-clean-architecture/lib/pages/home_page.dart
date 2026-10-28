@@ -127,52 +127,77 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _showAddDialog(BuildContext context) {
     final titleCtrl = TextEditingController();
     final bodyCtrl = TextEditingController();
+    String? error;
+    var saving = false;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Catatan Baru'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Judul',
-                border: OutlineInputBorder(),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Catatan Baru'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Judul',
+                  border: const OutlineInputBorder(),
+                  errorText: error,
+                ),
+                onChanged: (_) {
+                  if (error != null) setDialogState(() => error = null);
+                },
+                autofocus: true,
               ),
-              autofocus: true,
+              const SizedBox(height: 8),
+              TextField(
+                controller: bodyCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Isi Catatan',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: bodyCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Isi Catatan',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
+            FilledButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      setDialogState(() {
+                        error = null;
+                        saving = true;
+                      });
+                      final failure = await ref
+                          .read(notesProvider.notifier)
+                          .addNote(
+                            title: titleCtrl.text,
+                            body: bodyCtrl.text.trim(),
+                          );
+                      if (!ctx.mounted) return;
+                      if (failure != null) {
+                        setDialogState(() {
+                          error = failure.message;
+                          saving = false;
+                        });
+                        return;
+                      }
+                      Navigator.pop(ctx);
+                    },
+              child: const Text('Simpan'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final title = titleCtrl.text.trim();
-              if (title.isNotEmpty) {
-                ref
-                    .read(notesProvider.notifier)
-                    .addNote(title: title, body: bodyCtrl.text.trim());
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
-    );
+    ).whenComplete(() {
+      titleCtrl.dispose();
+      bodyCtrl.dispose();
+    });
   }
 }

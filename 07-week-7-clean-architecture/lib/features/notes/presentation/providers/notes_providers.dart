@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/failures.dart';
 import '../../../../data/local/db.dart';
 import '../../data/repositories/note_repository_impl.dart';
 import '../../domain/entities/note.dart';
 import '../../domain/repositories/note_repository.dart';
+import '../../domain/usecases/add_note.dart';
 import '../../domain/usecases/get_notes.dart';
 import '../../domain/usecases/sync_notes.dart';
 
@@ -21,6 +23,10 @@ final syncNotesProvider = Provider<SyncNotes>((ref) {
   return SyncNotes(ref.watch(noteRepositoryProvider));
 });
 
+final addNoteProvider = Provider<AddNote>((ref) {
+  return AddNote(ref.watch(noteRepositoryProvider));
+});
+
 // Presentation layer: state untuk UI (AsyncNotifier agar bisa mutasi)
 final notesProvider = AsyncNotifierProvider<NotesNotifier, List<Note>>(
   NotesNotifier.new,
@@ -36,14 +42,15 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
     return result.notes;
   }
 
-  Future<void> addNote({required String title, String body = ''}) async {
+  Future<Failure?> addNote({required String title, String body = ''}) async {
     final result = await ref
-        .read(noteRepositoryProvider)
-        .addNote(title: title, body: body);
+        .read(addNoteProvider)
+        .call(title: title, body: body);
     if (result.failure != null) {
-      throw Exception(result.failure!.message);
+      return result.failure;
     }
     ref.invalidateSelf();
+    return null;
   }
 
   Future<void> deleteNote(int id) async {
