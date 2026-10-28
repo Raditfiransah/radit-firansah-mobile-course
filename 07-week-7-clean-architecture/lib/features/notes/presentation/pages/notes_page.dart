@@ -11,38 +11,69 @@ class NotesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notesAsync = ref.watch(notesProvider);
+    final query = ref.watch(searchQueryProvider);
 
-    return notesAsync.when(
-      data: (notes) {
-        if (notes.isEmpty) {
-          return const Center(
-            child: Text('Belum ada catatan. Tekan tombol + untuk menambah.'),
-          );
-        }
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: 'Cari judul catatan…',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: (value) =>
+                ref.read(searchQueryProvider.notifier).state = value,
+          ),
+        ),
+        Expanded(
+          child: notesAsync.when(
+            data: (notes) {
+              if (notes.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Belum ada catatan. Tekan tombol + untuk menambah.',
+                  ),
+                );
+              }
 
-        return ListView.builder(
-          padding: const EdgeInsets.only(top: 8, bottom: 80),
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            final note = notes[index];
-            return NoteTile(
-              note: note,
-              onTap: () {
-                if (note.id != null) {
-                  context.push('/note/${note.id}');
-                }
-              },
-              onDelete: () {
-                if (note.id != null) {
-                  ref.read(notesProvider.notifier).deleteNote(note.id!);
-                }
-              },
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+              final filtered = ref
+                  .watch(searchNotesProvider)
+                  .call(notes, query);
+              if (filtered.isEmpty) {
+                return Center(
+                  child: Text('Tidak ada catatan yang cocok dengan "$query".'),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 80),
+                itemCount: filtered.length,
+                itemBuilder: (context, index) {
+                  final note = filtered[index];
+                  return NoteTile(
+                    note: note,
+                    onTap: () {
+                      if (note.id != null) {
+                        context.push('/note/${note.id}');
+                      }
+                    },
+                    onDelete: () {
+                      if (note.id != null) {
+                        ref.read(notesProvider.notifier).deleteNote(note.id!);
+                      }
+                    },
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error: $e')),
+          ),
+        ),
+      ],
     );
   }
 }

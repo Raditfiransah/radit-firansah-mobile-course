@@ -7,6 +7,7 @@ import '../../domain/entities/note.dart';
 import '../../domain/repositories/note_repository.dart';
 import '../../domain/usecases/add_note.dart';
 import '../../domain/usecases/get_notes.dart';
+import '../../domain/usecases/search_notes.dart';
 import '../../domain/usecases/sync_notes.dart';
 
 // Data layer: database opener disuntikkan (mudah diganti fake saat test)
@@ -26,6 +27,12 @@ final syncNotesProvider = Provider<SyncNotes>((ref) {
 final addNoteProvider = Provider<AddNote>((ref) {
   return AddNote(ref.watch(noteRepositoryProvider));
 });
+
+final searchNotesProvider = Provider<SearchNotes>((ref) {
+  return const SearchNotes();
+});
+
+final searchQueryProvider = StateProvider<String>((ref) => '');
 
 // Presentation layer: state untuk UI (AsyncNotifier agar bisa mutasi)
 final notesProvider = AsyncNotifierProvider<NotesNotifier, List<Note>>(
