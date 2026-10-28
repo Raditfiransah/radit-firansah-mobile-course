@@ -5,6 +5,9 @@ import 'package:week5_offline_notes/features/notes/domain/repositories/note_repo
 import 'package:week5_offline_notes/features/notes/domain/usecases/add_note.dart';
 
 class _FakeNoteRepository implements NoteRepository {
+  _FakeNoteRepository({this.fail = false});
+
+  final bool fail;
   final List<({String title, String body})> saved = [];
 
   @override
@@ -13,6 +16,9 @@ class _FakeNoteRepository implements NoteRepository {
     String body = '',
   }) async {
     saved.add((title: title, body: body));
+    if (fail) {
+      return (note: null, failure: const LocalFailure('disk penuh'));
+    }
     return (
       note: Note(
         id: saved.length,
@@ -62,5 +68,13 @@ void main() {
     expect(result.note?.title, 'Beli kopi');
     expect(repo.saved.single.title, 'Beli kopi');
     expect(repo.saved.single.body, '2x');
+  });
+
+  test('AddNote meneruskan failure dari repository', () async {
+    final repo = _FakeNoteRepository(fail: true);
+    final result = await AddNote(repo).call(title: 'Judul valid');
+
+    expect(result.failure, isA<LocalFailure>());
+    expect(result.note, isNull);
   });
 }
