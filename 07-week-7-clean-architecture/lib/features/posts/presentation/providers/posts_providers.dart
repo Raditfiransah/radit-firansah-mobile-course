@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../data/local/db.dart';
 import '../../../../shared/providers.dart';
 import '../../data/repositories/post_repository_impl.dart';
@@ -14,14 +15,17 @@ final loadPostsCacheFirstProvider = Provider<LoadPostsCacheFirst>((ref) {
   return LoadPostsCacheFirst(ref.watch(postRepositoryProvider));
 });
 
-final postsProvider =
-    AsyncNotifierProvider<PostsNotifier, List<Post>>(PostsNotifier.new);
+final postsProvider = AsyncNotifierProvider<PostsNotifier, List<Post>>(
+  PostsNotifier.new,
+);
 
 class PostsNotifier extends AsyncNotifier<List<Post>> {
   @override
   Future<List<Post>> build() async {
     final isOffline = ref.watch(forceOfflineProvider);
-    final result = await ref.watch(loadPostsCacheFirstProvider).call(
+    final result = await ref
+        .watch(loadPostsCacheFirstProvider)
+        .call(
           forceOffline: isOffline,
           onBackgroundUpdated: () => ref.invalidateSelf(),
         );

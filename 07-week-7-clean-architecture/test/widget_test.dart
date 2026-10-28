@@ -4,11 +4,7 @@ import 'package:week5_offline_notes/main.dart';
 
 void main() {
   testWidgets('OfflineFirstApp smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: OfflineFirstApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: OfflineFirstApp()));
 
     expect(find.text('Offline-First Demo'), findsOneWidget);
   });

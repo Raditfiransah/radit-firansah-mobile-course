@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/failures.dart';
 import '../../domain/entities/note.dart';
 import '../../domain/repositories/note_repository.dart';
@@ -28,8 +29,12 @@ class NoteRepositoryImpl implements NoteRepository {
   Future<({Note? note, Failure? failure})> fetchNoteById(int id) async {
     try {
       final db = await _openDb();
-      final rows =
-          await db.query('notes', where: 'id = ?', whereArgs: [id], limit: 1);
+      final rows = await db.query(
+        'notes',
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
       if (rows.isEmpty) return (note: null, failure: null);
       return (note: NoteModel.fromMap(rows.first).toEntity(), failure: null);
     } catch (e) {
@@ -47,19 +52,25 @@ class NoteRepositoryImpl implements NoteRepository {
       final now = DateTime.now();
       final id = await db.insert(
         'notes',
-        NoteModel(title: title, body: body, updatedAt: now, dirty: true)
-            .toMap(),
+        NoteModel(
+          title: title,
+          body: body,
+          updatedAt: now,
+          dirty: true,
+        ).toMap(),
       );
       return (
         note: Note(
-            id: id, title: title, body: body, updatedAt: now, dirty: true),
+          id: id,
+          title: title,
+          body: body,
+          updatedAt: now,
+          dirty: true,
+        ),
         failure: null,
       );
     } catch (e) {
-      return (
-        note: null,
-        failure: LocalFailure('Gagal menyimpan catatan: $e'),
-      );
+      return (note: null, failure: LocalFailure('Gagal menyimpan catatan: $e'));
     }
   }
 

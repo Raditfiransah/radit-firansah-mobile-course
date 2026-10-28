@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../shared/providers.dart';
 import '../providers/settings_providers.dart';
 
@@ -13,9 +14,7 @@ class SettingsPage extends ConsumerWidget {
     final lastOpened = ref.watch(lastOpenedProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pengaturan & Simulasi'),
-      ),
+      appBar: AppBar(title: const Text('Pengaturan & Simulasi')),
       body: ListView(
         children: [
           SwitchListTile(

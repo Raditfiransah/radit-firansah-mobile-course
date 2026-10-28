@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/repositories/prefs_repository_impl.dart';
 import '../../domain/repositories/prefs_repository.dart';
 
@@ -6,8 +7,9 @@ final prefsRepositoryProvider = Provider<PrefsRepository>((ref) {
   return PrefsRepositoryImpl();
 });
 
-final darkModeProvider =
-    AsyncNotifierProvider<DarkModeNotifier, bool>(DarkModeNotifier.new);
+final darkModeProvider = AsyncNotifierProvider<DarkModeNotifier, bool>(
+  DarkModeNotifier.new,
+);
 
 class DarkModeNotifier extends AsyncNotifier<bool> {
   @override

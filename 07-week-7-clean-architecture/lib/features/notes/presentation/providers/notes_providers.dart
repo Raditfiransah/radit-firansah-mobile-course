@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../data/local/db.dart';
 import '../../data/repositories/note_repository_impl.dart';
 import '../../domain/entities/note.dart';
@@ -21,8 +22,9 @@ final syncNotesProvider = Provider<SyncNotes>((ref) {
 });
 
 // Presentation layer: state untuk UI (AsyncNotifier agar bisa mutasi)
-final notesProvider =
-    AsyncNotifierProvider<NotesNotifier, List<Note>>(NotesNotifier.new);
+final notesProvider = AsyncNotifierProvider<NotesNotifier, List<Note>>(
+  NotesNotifier.new,
+);
 
 class NotesNotifier extends AsyncNotifier<List<Note>> {
   @override
@@ -35,8 +37,9 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
   }
 
   Future<void> addNote({required String title, String body = ''}) async {
-    final result =
-        await ref.read(noteRepositoryProvider).addNote(title: title, body: body);
+    final result = await ref
+        .read(noteRepositoryProvider)
+        .addNote(title: title, body: body);
     if (result.failure != null) {
       throw Exception(result.failure!.message);
     }
